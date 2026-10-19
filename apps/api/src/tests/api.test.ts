@@ -27,6 +27,7 @@ test("creates, redirects and increments clicks atomically", async () => {
     originalUrl: "https://example.com/a?x=1",
   });
   expect(response.status).toBe(201);
+  expect(data.slug).toMatch(/^[A-Za-z0-9_-]{8}$/);
   const redirects = await Promise.all(
     Array.from({ length: 10 }, () => request(`/s/${data.slug}`)),
   );
@@ -130,6 +131,7 @@ test("shares preserve multiline and hostile HTML as plain JSON text", async () =
   const content = "<script>alert(1)</script>\nhello";
   const { response, data } = await createSnippet({ title: "Code", content });
   expect(response.status).toBe(201);
+  expect(data.slug).toMatch(/^[A-Za-z0-9_-]{22}$/);
   expect(data.shareUrl).toBe(`${config.webOrigin}/t/${data.slug}`);
   const read = await request(`/api/v1/snippets/${data.slug}`);
   expect(read.headers.get("cache-control")).toBe("no-store");

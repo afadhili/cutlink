@@ -99,7 +99,7 @@ tests/e2e/           Playwright browser flows
 
 Requests and JSON responses have Elysia schemas and OpenAPI documentation. Errors use `{ "error": { "code": "…", "message": "…" } }`. Missing, expired and exhausted resources return 404. Invalid values return 400 or 422, duplicate slugs return 409, and throttled requests return 429 with `Retry-After`.
 
-Generated slugs contain 128 random bits. Custom slugs are normalized to lowercase. Destinations accept only HTTP(S), reject embedded credentials, and are never fetched by the backend. Links are publicly readable; slugs do not confer ownership.
+Generated short-link codes use 8 URL-safe characters (48 random bits), with database uniqueness constraints and collision retries. Text shares retain 22-character identifiers (128 random bits). Existing links remain valid. Custom slugs are normalized to lowercase. Destinations accept only HTTP(S), reject embedded credentials, and are never fetched by the backend. Links are publicly readable; slugs do not confer ownership.
 
 Text reads lock their row in a transaction, check expiration after the lock, and increment the read count or delete burn-after-read content before returning. A successful **retrieval**, rather than a confirmed human viewing, consumes a read: a lost response still consumes it. A burn-after-read share permits exactly one retrieval and deletes its database row. HEAD requests cannot consume text. The frontend waits for an explicit Reveal action, never automatically refetches, and renders content as plain text. Anyone holding the URL can retrieve it and save a copy.
 

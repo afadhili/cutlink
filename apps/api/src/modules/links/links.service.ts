@@ -1,7 +1,7 @@
 import type { CreateLink, LinkResource } from "@cutlink/shared";
 import type { linksRepository } from "./links.repository";
 import { AppError, isUniqueViolation } from "../../lib/errors";
-import { createSlug } from "../../lib/ids";
+import { createLinkSlug } from "../../lib/ids";
 import { normalizeUrl, normalizeSlug, parseExpiry } from "../../lib/urls";
 type Repository = ReturnType<typeof linksRepository>;
 export function linksService(repository: Repository, baseUrl: string) {
@@ -25,7 +25,7 @@ export function linksService(repository: Repository, baseUrl: string) {
         try {
           return serialize(
             await repository.create({
-              slug: customSlug ?? createSlug(),
+              slug: customSlug ?? createLinkSlug(),
               originalUrl,
               expiresAt,
             }),
