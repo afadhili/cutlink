@@ -1,0 +1,24 @@
+{
+  "name": "cutlink",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "bun --env-file=.env --watch apps/api/src/index.ts",
+    "dev:web": "bun run --cwd apps/web dev",
+    "typecheck": "tsc -p apps/api/tsconfig.json && tsc -p apps/web/tsconfig.json",
+    "build": "bun run --cwd apps/web build && bun build apps/api/src/index.ts --target=bun --packages=external --outdir=apps/api/dist",
+    "test": "bun run test:api && bun run test:web",
+    "test:api": "bun --env-file=.env test apps/api",
+    "test:web": "bun run --cwd apps/web test",
+    "db:generate": "bun --env-file=.env run --cwd apps/api db:generate",
+    "db:migrate": "bun --env-file=.env apps/api/src/db/migrate.ts"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/bun": "latest"
+  }
+}

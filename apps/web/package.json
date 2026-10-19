@@ -1,0 +1,32 @@
+{
+  "name": "@cutlink/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cutlink/shared": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-router": "latest",
+    "@tanstack/react-query": "latest",
+    "qrcode": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "6.1.2",
+    "vite": "8.3.4",
+    "tailwindcss": "4.3.3",
+    "@tailwindcss/vite": "4.3.3",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/qrcode": "latest",
+    "vitest": "5.0.5",
+    "@testing-library/react": "latest",
+    "@testing-library/jest-dom": "latest",
+    "jsdom": "latest"
+  }
+}

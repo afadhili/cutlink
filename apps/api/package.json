@@ -1,0 +1,19 @@
+{
+  "name": "@cutlink/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "@cutlink/shared": "workspace:*",
+    "elysia": "1.4.30",
+    "@elysiajs/cors": "1.4.2",
+    "@elysiajs/openapi": "1.4.16",
+    "drizzle-orm": "0.45.4",
+    "postgres": "latest"
+  },
+  "devDependencies": {
+    "drizzle-kit": "latest"
+  }
+}
