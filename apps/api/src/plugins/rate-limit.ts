@@ -2,10 +2,12 @@
 export function createRateLimiter(limit = 30, windowMs = 60_000) {
   const windows = new Map<string, { count: number; expires: number }>();
   return (key: string, now = Date.now()) => {
-    for (const [id, value] of windows) if (value.expires <= now) windows.delete(id);
+    for (const [id, value] of windows)
+      if (value.expires <= now) windows.delete(id);
     const current = windows.get(key);
     if (current) {
-      if (current.count >= limit) return Math.max(1, Math.ceil((current.expires - now) / 1000));
+      if (current.count >= limit)
+        return Math.max(1, Math.ceil((current.expires - now) / 1000));
       current.count++;
     } else {
       if (windows.size >= 10_000) return Math.ceil(windowMs / 1000);

@@ -9,16 +9,25 @@
   "scripts": {
     "dev:api": "bun --env-file=.env --watch apps/api/src/index.ts",
     "dev:web": "bun run --cwd apps/web dev",
-    "typecheck": "tsc -p apps/api/tsconfig.json && tsc -p apps/web/tsconfig.json",
+    "typecheck": "tsc -p apps/api/tsconfig.json && tsc -p apps/web/tsconfig.json && tsc -p tsconfig.tools.json",
     "build": "bun run --cwd apps/web build && bun build apps/api/src/index.ts --target=bun --packages=external --outdir=apps/api/dist",
     "test": "bun run test:api && bun run test:web",
     "test:api": "bun --env-file=.env test apps/api",
     "test:web": "bun run --cwd apps/web test",
     "db:generate": "bun --env-file=.env run --cwd apps/api db:generate",
-    "db:migrate": "bun --env-file=.env apps/api/src/db/migrate.ts"
+    "db:migrate": "bun --env-file=.env apps/api/src/db/migrate.ts",
+    "test:e2e": "node --env-file=.env node_modules/@playwright/test/cli.js test",
+    "format": "prettier --write apps packages tests *.json *.ts docker-compose.yml README.md",
+    "format:check": "prettier --check apps packages tests *.json *.ts docker-compose.yml README.md"
   },
   "devDependencies": {
-    "typescript": "latest",
-    "@types/bun": "latest"
+    "@playwright/test": "^1.64.1",
+    "@types/bun": "1.4.3",
+    "@types/node": "^26.6.5",
+    "@types/pngjs": "^6.0.5",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.9.10",
+    "typescript": "7.0.2"
   }
 }

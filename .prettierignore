@@ -1,0 +1,6 @@
+bun.lock
+STRUCTURE.md
+apps/api/src/db/migrations/
+node_modules/
+dist/
+test-results/
