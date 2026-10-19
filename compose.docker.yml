@@ -1,0 +1,83 @@
+name: cutlink-docker
+
+x-api: &api
+  image: cutlink-api:local
+  build:
+    context: .
+    target: api
+  environment:
+    POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    API_PORT: "3000"
+    WEB_ORIGIN: ${DOCKER_PUBLIC_ORIGIN:-http://localhost:8080}
+    PUBLIC_BASE_URL: ${DOCKER_PUBLIC_ORIGIN:-http://localhost:8080}
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cutlink
+      POSTGRES_USER: cutlink
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cutlink -d cutlink"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    <<: *api
+    command: ["bun", "docker/api-entrypoint.ts", "migrate"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    <<: *api
+    restart: unless-stopped
+    init: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "const r = await fetch('http://localhost:3000/api/v1/health'); process.exit(r.ok ? 0 : 1)",
+        ]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  web:
+    image: cutlink-web:local
+    build:
+      context: .
+      target: web
+    restart: unless-stopped
+    ports:
+      - "${DOCKER_BIND_ADDRESS:-127.0.0.1}:${DOCKER_WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--quiet",
+          "--output-document=/dev/null",
+          "http://127.0.0.1/api/v1/health",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

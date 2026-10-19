@@ -25,6 +25,37 @@ Open <http://localhost:5173>. The API runs on port 3000; interactive OpenAPI doc
 
 If port 5432 is already in use, change `POSTGRES_PORT` and the port in both database URLs together. Changing `API_PORT` also requires changing `PUBLIC_BASE_URL` and `API_PROXY_TARGET` in `apps/web/.env`. If changing the frontend port, update `WEB_ORIGIN` and Vite's port together. Docker credentials initialize a new volume; changing the password later does not change an existing database user's password.
 
+## Run everything in Docker
+
+Only Docker Engine and Compose are required on the host; Bun and Node are installed inside the build images.
+
+```sh
+# On a fresh checkout only (keep your existing .env if you already have one):
+cp .env.example .env
+# Set a unique POSTGRES_PASSWORD in .env.
+docker compose -f compose.docker.yml up -d --build --wait
+```
+
+Open <http://localhost:8080>. The frontend, API, redirects, and OpenAPI docs share that origin. Compose waits for PostgreSQL, runs migrations as a one-off service, then starts the API and Nginx. Database and API ports are internal to the Docker network. The Docker stack uses its own persistent database volume, separate from the database used by `docker-compose.yml` for native development.
+
+This setup reads `POSTGRES_PASSWORD` and the optional `DOCKER_*` variables from `.env`. It builds the internal database URL automatically, so native-development `DATABASE_URL`, `API_PORT`, `WEB_ORIGIN`, and `PUBLIC_BASE_URL` values do not affect it. Passwords containing URL punctuation are supported. Secrets and local build outputs are excluded from image build contexts.
+
+- `DOCKER_WEB_PORT`: host port, default `8080`.
+- `DOCKER_PUBLIC_ORIGIN`: browser-facing origin used in generated links, default `http://localhost:8080`. Update this together with the port, or set it to your HTTPS origin behind a proxy.
+- `DOCKER_BIND_ADDRESS`: host binding, default `127.0.0.1`. Use `0.0.0.0` to allow connections from other machines, and set the public origin to the address those machines use.
+
+```sh
+docker compose -f compose.docker.yml logs -f api web
+docker compose -f compose.docker.yml ps -a
+docker compose -f compose.docker.yml down
+# After pulling changes, rebuild and apply any new migrations:
+docker compose -f compose.docker.yml up -d --build --wait
+```
+
+`down` preserves database data. Do not add `--volumes` unless you intend to delete that data. An exited migration container with status 0 is expected. The API runs as the unprivileged Bun user; Nginx serves the production frontend bundle and proxies API/redirect requests without caching. Browser routes use an SPA fallback, while missing assets/API routes do not. All browser clients currently share Nginx's peer-IP creation quota (30/minute per endpoint); the existing trusted-proxy limitation below applies.
+
+The image build follows the [Bun Docker guide](https://bun.sh/guides/ecosystem/docker), and routing uses Nginx's [proxy](https://nginx.org/en/docs/http/ngx_http_proxy_module.html) and [static-file](https://docs.nginx.com/nginx/admin-guide/web-server/serving-static-content/) support.
+
 ## Configuration
 
 | Variable            | Purpose                                                                                     |
