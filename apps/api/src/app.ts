@@ -9,6 +9,9 @@ import { createRateLimiter } from './plugins/rate-limit';
 import { linksRepository } from './modules/links/links.repository';
 import { linksService } from './modules/links/links.service';
 import { linksRoutes } from './modules/links/links.routes';
+import { snippetsRepository } from './modules/snippets/snippets.repository';
+import { snippetsService } from './modules/snippets/snippets.service';
+import { snippetsRoutes } from './modules/snippets/snippets.routes';
 export function createApp(db: Database, config: Config, options: { rateLimit?: number } = {}) {
   const rateLimit = createRateLimiter(options.rateLimit);
   return new Elysia()
@@ -34,5 +37,6 @@ export function createApp(db: Database, config: Config, options: { rateLimit?: n
     })
     .use(openapi({ documentation: { info: { title: 'Cutlink API', version: '1.0.0' } } }))
     .get('/api/v1/health', async () => { await db.execute(sql`select 1`); return { status: 'ok' as const }; }, { response: { 200: t.Object({ status: t.Literal('ok') }), ...errorResponses } })
-    .use(linksRoutes(linksService(linksRepository(db), config.publicBaseUrl)));
+    .use(linksRoutes(linksService(linksRepository(db), config.publicBaseUrl)))
+    .use(snippetsRoutes(snippetsService(snippetsRepository(db), config.webOrigin)));
 }
